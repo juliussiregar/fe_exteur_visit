@@ -12,12 +12,12 @@ export default function ClientLayout({
   return (
     <div className="">
       {/* Sidebar */}
-      <SidebarComponent />
+      {/*<SidebarComponent />*/}
 
       {/* Konten utama */}
-      <main className="flex-1 p-6 bg-background ml-[250px] pt-[64px]">
+      <main>
         {/* Wrapper untuk konten agar rapi */}
-        <div className="max-w-7xl mx-auto">{children}</div>
+        <div>{children}</div>
       </main>
 
       {/* Notifikasi */}

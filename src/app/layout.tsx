@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import React from "react";
 import SessionProviderWrapper from "@/components/SessionProviderWrapper";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import ClientLayout from "./ClientLayout";
+import {Toaster} from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "Mantra App",
@@ -20,10 +18,13 @@ export default function RootLayout({
     <html lang="en">
       <body className="">
         <SessionProviderWrapper>
-          <Header />
-          <ClientLayout>{children}</ClientLayout>
-          <Footer />
+            <main>
+              {children}
+            </main>
         </SessionProviderWrapper>
+
+        {/* Notifikasi */}
+        <Toaster position="top-right" reverseOrder={false} />
       </body>
     </html>
   );
