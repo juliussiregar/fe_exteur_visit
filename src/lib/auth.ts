@@ -8,78 +8,80 @@ export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "your_username" }, // Menggunakan username
+        username: { label: "Username", type: "text", placeholder: "your_username" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        try {
-          if (!credentials?.username || !credentials?.password) {
-            throw new Error("Missing username or password");
-          }
-
-          const loginResponse = await fetch("http://localhost:8080/api/v1/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" }, // Format URL-encoded
-            body: new URLSearchParams({
-              username: credentials.username, // Gunakan username
-              password: credentials.password,
-            }),
-          });
-
-          if (!loginResponse.ok) {
-            throw new Error("Invalid login credentials");
-          }
-
-          const { access_token } = await loginResponse.json(); // Backend mengembalikan access_token
-
-          const meResponse = await fetch("http://localhost:8080/api/v1/auth/me", {
-            headers: {
-              Authorization: `Bearer ${access_token}`,
-            },
-          });
-
-          if (!meResponse.ok) {
-            throw new Error("Failed to fetch user data");
-          }
-
-          const userData = await meResponse.json();
-
-          return {
-            id: userData.id,
-            name: userData.full_name,
-            email: userData.email,
-            accessToken: access_token, // Simpan access_token
-          };
-        } catch (error) {
-          if (error instanceof Error) {
-            // eslint-disable-next-line no-console
-            console.error("Error in authorize:", error.message);
-          } else {
-            // eslint-disable-next-line no-console
-            console.error("Unexpected error:", error);
-          }
-          return null;
+        if (!credentials?.username || !credentials?.password) {
+          throw new Error("Missing username or password");
         }
+
+        const loginResponse = await fetch("http://localhost:8080/api/v1/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            username: credentials.username,
+            password: credentials.password,
+          }),
+        });
+
+        if (!loginResponse.ok) {
+          throw new Error("Invalid login credentials");
+        }
+
+        const { access_token } = await loginResponse.json();
+
+        const decodedToken = JSON.parse(
+          Buffer.from(access_token.split(".")[1], "base64").toString("utf-8")
+        ) as {
+          id: number;
+          company_id: string;
+          full_name: string;
+          roles: string[];
+          company_name: string;
+          exp: number;
+        };
+
+        return {
+          id: decodedToken.id,
+          name: decodedToken.full_name,
+          email: credentials.username, // Default username as email if not provided
+          accessToken: access_token,
+          company_id: decodedToken.company_id,
+          roles: decodedToken.roles || [],
+          company_name: decodedToken.company_name,
+          exp: decodedToken.exp,
+        };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.id = user.id as number;
         token.name = user.name;
         token.email = user.email;
-        token.accessToken = (user as any).accessToken; // Pastikan accessToken disimpan
+        token.accessToken = user.accessToken as string;
+        token.company_id = user.company_id as string;
+        token.roles = Array.isArray(user.roles) ? user.roles : []; // Ensure roles is an array
+        token.company_name = user.company_name as string;
+        token.exp = user.exp as number;
       }
+
       return token;
     },
     async session({ session, token }) {
       session.user = {
-        id: typeof token.id === "string" ? token.id : "",
-        name: typeof token.name === "string" ? token.name : "Unknown User",
-        email: typeof token.email === "string" ? token.email : "No Email",
-        accessToken: typeof token.accessToken === "string" ? token.accessToken : "",
+        id: token.id as number,
+        name: token.name || "Unknown User",
+        email: token.email || "",
+        accessToken: token.accessToken as string || "",
+        company_id: token.company_id as string || "",
+        roles: Array.isArray(token.roles) ? token.roles : [], // Ensure roles is an array
+        company_name: token.company_name as string || "",
+        exp: token.exp as number || 0,
       };
+
       return session;
     },
   },

@@ -28,7 +28,17 @@ export default function LoginPage() {
       toast.success("Login successful");
       router.push("/home");
     }
+   
   };
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.ctrlKey || event.metaKey) {
+      if (event.key === "a") {
+        event.preventDefault();
+        event.currentTarget.select();
+      }
+    }
+  };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
@@ -46,6 +56,7 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
               required
+              onKeyDown={handleKeyDown}
             />
           </div>
           <div>
@@ -56,6 +67,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
+              onKeyDown={handleKeyDown}
             />
           </div>
           <Button type="submit" className="w-full bg-primary text-white hover:opacity-80">

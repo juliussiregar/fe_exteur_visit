@@ -1,30 +1,33 @@
-import type { Metadata } from "next";
-import "./globals.css";
 import React from "react";
+import "./globals.css";
 import SessionProviderWrapper from "@/components/SessionProviderWrapper";
-import {Toaster} from "react-hot-toast";
+import Footer from "@/components/Footer";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Mantra App",
   description: "Face Recognition Absen App",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className="">
+      <body className="flex flex-col min-h-screen bg-gray-100">
+        {/* Wrapper untuk semua konten */}
         <SessionProviderWrapper>
-            <main>
-              {children}
-            </main>
+          <div className="flex-1 flex flex-col">
+            {/* Area konten */}
+            {children}
+          </div>
         </SessionProviderWrapper>
 
-        {/* Notifikasi */}
-        <Toaster position="top-right" reverseOrder={false} />
+        {/* Footer di bagian bawah */}
+        <footer className="w-full">
+          <Footer />
+        </footer>
       </body>
     </html>
   );

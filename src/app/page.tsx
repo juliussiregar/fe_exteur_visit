@@ -1,22 +1,24 @@
-// src/app/page.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default function Home() {
-  const { data: session } = useSession();
+export default function BlankPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-center text-2xl font-bold">Welcome to the App</h1>
-      {session ? (
-        <>
-          <p className="text-center mt-4">Hello, {session.user.name}</p>
-          <pre className="mt-4">{JSON.stringify(session.user, null, 2)}</pre>
-        </>
-      ) : (
-        <p className="text-center mt-4">Please log in to see your information.</p>
-      )}
-    </div>
-  );
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/home"); // Arahkan ke /home jika sudah login
+    } else if (status === "unauthenticated") {
+      router.push("/login"); // Arahkan ke /login jika belum login
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
+  return null; // Tidak ada konten yang ditampilkan
 }
